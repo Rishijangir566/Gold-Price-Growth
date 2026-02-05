@@ -1,0 +1,59 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+  <span id="growthValue"></span>
+
+<script>
+async function loadGrowthFromSheet() {
+  const SHEET_ID = "15XzDyvpwWQt4mOBOApqEhtyZ_WfANM9fth5Vvzs8X68";
+  const GID = "0";
+  const query = "select C limit 1"; // reads D1
+
+  const url =
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?` +
+    `gid=${GID}&tqx=out:json&tq=${encodeURIComponent(query)}`;
+
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    const text = await res.text();
+    const json = JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
+
+    let raw = json.table.rows?.[0]?.c?.[0]?.v;   // number or string
+    raw = String(raw ?? "").replace("%", "").trim();
+
+    let num = Number(raw);
+    if (!Number.isFinite(num)) {
+      document.getElementById("growthValue").textContent = "--";
+      return;
+    }
+
+    // If your sheet stores 0.18 for 18%, uncomment next line:
+    // num = num * 100;
+
+    const rounded = Math.round(num);             // 18.6 -> 19, 18.2 -> 18
+    const twoDigit = String(rounded).padStart(2, "0"); // 3 -> 03
+
+    document.getElementById("growthValue").textContent = `+${twoDigit}%`;
+  } catch (err) {
+    console.error("Growth fetch failed:", err);
+}
+}
+
+
+loadGrowthFromSheet();
+</script>
+
+
+</body>
+</html>
+
