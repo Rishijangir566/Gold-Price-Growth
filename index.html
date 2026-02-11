@@ -1,56 +1,376 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gold & Silver Growth</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 24px;
+            background: #0b0d12;
+            font-family: Arial, sans-serif;
+            color: #fff
+        }
+
+        .wrap {
+            max-width: 980px;
+            margin: 0 auto
+        }
+
+        .header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 14px
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            opacity: .9
+        }
+
+        .header .sub {
+            font-size: 12px;
+            opacity: .6
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        @media(max-width:900px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metal-card {
+            border-radius: 18px;
+            padding: 30px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .10);
+            box-shadow: 0 16px 44px rgba(0, 0, 0, .35);
+        }
+
+        .metal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .metal-badge {
+            font-weight: 900;
+            font-size: 12px;
+            letter-spacing: .6px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: rgba(255, 255, 255, .06);
+        }
+
+        .gold .metal-badge {
+            box-shadow: inset 0 0 0 1px rgba(247, 201, 72, .25);
+        }
+
+        .silver .metal-badge {
+            box-shadow: inset 0 0 0 1px rgba(188, 210, 255, .25);
+        }
+
+        .metal-range {
+            font-size: 12px;
+            opacity: .75;
+            font-weight: 700;
+        }
+
+        .values-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 12px 0 6px;
+        }
+
+        .value-block {
+            
+            min-width: 0;
+        }
+
+        .value-month {
+            font-size: 12px;
+            opacity: .70;
+            font-weight: 800;
+            letter-spacing: .3px;
+            margin-bottom: 6px;
+        }
+
+        .value-num {
+            font-size: 28px;
+            font-weight: 950;
+            letter-spacing: .2px;
+        }
+
+        .growth-row {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 12px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .10);
+        }
+
+        .growth-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .growth-text {
+            font-size: 12px;
+            opacity: .75;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+        }
+
+        .growth-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            background: rgba(34, 197, 94, .14);
+            border: 1px solid rgba(34, 197, 94, .30);
+            color: #22c55e;
+        }
+
+        .sparkline {
+            width: 400px;
+            height: 22px;
+            border-radius: 999px;
+            background:
+                linear-gradient(90deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .02));
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* simple animated red line like screenshot */
+        .sparkline::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, transparent 0%,
+                    rgba(255, 60, 60, .0) 15%,
+                    rgba(255, 60, 60, .95) 50%,
+                    rgba(255, 60, 60, .0) 85%,
+                    transparent 100%);
+            transform: translateX(-80%);
+            animation: move 2.8s infinite linear;
+            opacity: .9;
+        }
+
+        @keyframes move {
+            to {
+                transform: translateX(80%);
+            }
+        }
+
+        .growth-pill {
+            font-size: 18px;
+            font-weight: 950;
+            padding: 8px 12px;
+            border-radius: 14px;
+            background: rgba(0, 200, 120, .14);
+            border: 1px solid rgba(0, 200, 120, .35);
+        }
+    </style>
 </head>
+
 <body>
-    
-  <span id="growthValue"></span>
+    <div class="cards">
 
-<script>
-async function loadGrowthFromSheet() {
-  const SHEET_ID = "15XzDyvpwWQt4mOBOApqEhtyZ_WfANM9fth5Vvzs8X68";
-  const GID = "0";
-  const query = "select C limit 1"; // reads D1
+        <!-- GOLD -->
+        <div class="metal-card gold">
+            <div class="metal-head">
+                <span class="metal-badge">GOLD</span>
+                <span class="metal-range"><span id="mPast">Feb 2025</span> → <span id="mPresent">Feb 2026</span></span>
+            </div>
 
-  const url =
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?` +
-    `gid=${GID}&tqx=out:json&tq=${encodeURIComponent(query)}`;
+            <!-- NO BOXES: just 2 lines -->
+            <div class="values-row">
+                <div class="value-block">
+                    <div class="value-month" id="mPastLabel">Feb 2025</div>
+                    <div class="value-num" id="gPast">—</div>
+                </div>
 
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    const text = await res.text();
-    const json = JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
+                <div class="value-block">
+                    <div class="value-month" id="mPresentLabel">Feb 2026</div>
+                    <div class="value-num" id="gPresent">—</div>
+                </div>
+            </div>
 
-    let raw = json.table.rows?.[0]?.c?.[0]?.v;   // number or string
-    raw = String(raw ?? "").replace("%", "").trim();
+            <div class="growth-row">
+                <div class="growth-left">
+                    <span class="growth-text">Growth</span>
 
-    let num = Number(raw);
-    if (!Number.isFinite(num)) {
-      document.getElementById("growthValue").textContent = "--";
-      return;
-    }
+                    <!-- ICON in between -->
+                    <span class="growth-icon" aria-hidden="true">
+                        <!-- inline SVG icon -->
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                            <path d="M4 16l6-6 4 4 6-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M20 6v6h-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </span>
 
-    // If your sheet stores 0.18 for 18%, uncomment next line:
-    // num = num * 100;
+                    <!-- optional sparkline line (like your screenshot) -->
+                    <span class="sparkline"></span>
+                </div>
 
-    const rounded = Math.round(num);             // 18.6 -> 19, 18.2 -> 18
-    const twoDigit = String(rounded).padStart(2, "0"); // 3 -> 03
-
-    document.getElementById("growthValue").textContent = `+${twoDigit}%`;
-  } catch (err) {
-    console.error("Growth fetch failed:", err);
-}
-}
-
-
-loadGrowthFromSheet();
-</script>
+                <div class="growth-pill" id="gGrowth">—</div>
+            </div>
+        </div>
 
 
+        <!-- SILVER -->
+        <div class="metal-card silver">
+            <div class="metal-head">
+                <span class="metal-badge">SILVER</span>
+                <span class="metal-range"><span id="mPast2">Feb 2025</span> → <span id="mPresent2">Feb
+                        2026</span></span>
+            </div>
+
+            <div class="values-row">
+                <div class="value-block">
+                    <div class="value-month" id="mPastLabel2">Feb 2025</div>
+                    <div class="value-num" id="sPast">—</div>
+                </div>
+
+                <div class="value-block">
+                    <div class="value-month" id="mPresentLabel2">Feb 2026</div>
+                    <div class="value-num" id="sPresent">—</div>
+                </div>
+            </div>
+
+            <div class="growth-row">
+                <div class="growth-left">
+                    <span class="growth-text">Growth</span>
+
+                    <span class="growth-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                            <path d="M4 16l6-6 4 4 6-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M20 6v6h-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </span>
+
+                    <span class="sparkline"></span>
+                </div>
+
+                <div class="growth-pill" id="sGrowth">—</div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script>
+        function parseCSVLine(line) {
+            const out = [];
+            let cur = "", inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (ch === '"') {
+                    if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
+                    else inQuotes = !inQuotes;
+                } else if (ch === ',' && !inQuotes) {
+                    out.push(cur); cur = "";
+                } else cur += ch;
+            }
+            out.push(cur);
+            return out.map(s => s.trim());
+        }
+
+        function toNum(x) {
+            const n = Number(String(x ?? "").replace(/,/g, "").trim());
+            return Number.isFinite(n) ? n : NaN;
+        }
+
+        function formatNoDecimals(n) {
+            return Number.isFinite(n) ? Math.round(n).toLocaleString() : "--";
+        }
+
+        function growthFrom(past, present) {
+            if (!Number.isFinite(past) || past === 0 || !Number.isFinite(present)) return "--";
+            const g = ((present - past) / past) * 100;
+            return `+${Math.round(g)}%`;
+        }
+
+        async function loadMetals() {
+            const SHEET_ID = "1TdY_tLf1sQByZUHKujMUBDBjkzCEPbVJPnidYTVhv7M";
+            const GID = "0";
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("HTTP " + res.status);
+
+                const csv = await res.text();
+                const lines = csv.split(/\r?\n/).filter(Boolean);
+
+                const r0 = parseCSVLine(lines[0] || "");
+                const r1 = parseCSVLine(lines[1] || "");
+
+                // Months (Row 2): B,C
+                const pastMonth = r1[1] || "--";
+                const presentMonth = r1[2] || "--";
+                document.getElementById("mPast").textContent = pastMonth;
+                document.getElementById("mPresent").textContent = presentMonth;
+                document.getElementById("mPast2").textContent = pastMonth;
+                document.getElementById("mPresent2").textContent = presentMonth;
+
+                // Row 1 layout:
+                // A Gold, B past, C present, D growth, E Silver, F past, G present, H growth
+                const goldPastN = toNum(r0[1]);
+                const goldPresentN = toNum(r0[2]);
+                const silverPastN = toNum(r0[5]);
+                const silverPresentN = toNum(r0[6]);
+
+                document.getElementById("gPast").textContent = formatNoDecimals(goldPastN);
+                document.getElementById("gPresent").textContent = formatNoDecimals(goldPresentN);
+                document.getElementById("gGrowth").textContent = growthFrom(goldPastN, goldPresentN);
+
+                document.getElementById("sPast").textContent = formatNoDecimals(silverPastN);
+                document.getElementById("sPresent").textContent = formatNoDecimals(silverPresentN);
+                document.getElementById("sGrowth").textContent = growthFrom(silverPastN, silverPresentN);
+
+                document.getElementById("status").textContent = "Updated ✓";
+
+            } catch (e) {
+                console.error("CSV fetch failed:", e);
+                document.getElementById("status").textContent = "Failed to load data";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadMetals);
+        // optional refresh
+        // setInterval(loadMetals, 10 * 60 * 1000);
+    </script>
 </body>
-</html>
 
+</html>
